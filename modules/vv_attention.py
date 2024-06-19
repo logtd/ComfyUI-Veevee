@@ -22,7 +22,7 @@ class VeeveeAttention(ComfyCrossAttention):
         self.block_idx = (self.block, self.idx)
 
     def _perform_rave_attention(self, transformer_options):
-        step_percent = transformer_options['STEP_PERCENT']
+        step_percent = transformer_options.get('STEP_PERCENT', 999)
         rave_config: RaveAttentionConfig = transformer_options.get('RAVE_CONFIG', None)
         if rave_config is None or self.block_idx not in rave_config.targets or not (rave_config.start_percent <= step_percent <= rave_config.end_percent):
             return False
@@ -33,7 +33,7 @@ class VeeveeAttention(ComfyCrossAttention):
         return rave_attention(q, k, v, rave_config.grid_size, rave_config.seed, transformer_options)
         
     def _sca_attn(self, q, k, v, transformer_options):
-        step_percent = transformer_options['STEP_PERCENT']
+        step_percent = transformer_options.get('STEP_PERCENT', 999)
         sca_config: SparseCasualAttentionConfig = transformer_options.get('SCA_CONFIG', None)
         if sca_config is None or self.block_idx not in sca_config.targets or not (sca_config.start_percent <= step_percent <= sca_config.end_percent):
             return q,k,v
@@ -45,20 +45,19 @@ class VeeveeAttention(ComfyCrossAttention):
         vs = []
         for idx in range(n_frames):
             for cond_idx in range(len_conds):
-                relative_idx = idx - (cond_idx * n_frames)
+                prev_idx = max(0, idx - 1) + (cond_idx * n_frames)
+                next_idx = min(len(q)-1, idx + 1) + (cond_idx * n_frames)
                 if sca_config.direction == SCADirection.PREVIOUS or sca_config.direction == SCADirection.BOTH:
-                    prev_idx = max(relative_idx-1, 0) + (cond_idx * n_frames)
                     ks.append(torch.cat([k[idx], k[prev_idx]]))
                     vs.append(torch.cat([v[idx], v[prev_idx]]))
                 if sca_config.direction == SCADirection.NEXT or sca_config.direction == SCADirection.BOTH:
-                    next_idx = min(relative_idx+1, len(q)-1) + (cond_idx * n_frames)
                     ks.append(torch.cat([k[idx], k[next_idx]]))
                     vs.append(torch.cat([v[idx], v[next_idx]]))
 
         return q, torch.stack(ks), torch.stack(vs)
     
     def _pivot_attn(self, q, k, v, transformer_options):
-        step_percent = transformer_options['STEP_PERCENT']
+        step_percent = transformer_options.get('STEP_PERCENT', 999)
         pivot_config: PivotAttentionConfig = transformer_options.get('PIVOT_CONFIG', None)
         if pivot_config is None or self.block_idx not in pivot_config.targets or not (pivot_config.start_percent <= step_percent <= pivot_config.end_percent):
             return q,k,v
@@ -77,7 +76,7 @@ class VeeveeAttention(ComfyCrossAttention):
         return q, k, v
 
     def _interframe_alignment(self, query, key, hidden_states, transformer_options, direction):
-        step_percent = transformer_options['STEP_PERCENT']
+        step_percent = transformer_options.get('STEP_PERCENT', 999)
         flow_config: FlowAttentionConfig = transformer_options.get('FLOW_CONFIG', None)
         if flow_config is None or self.block_idx not in flow_config.targets or not (flow_config.start_percent <= step_percent <= flow_config.end_percent):
             return hidden_states
@@ -140,7 +139,7 @@ class VeeveeAttention(ComfyCrossAttention):
         else:
             sub_idx = sub_idxs[0]
 
-        step = extra_options['STEP']
+        step = extra_options.get('STEP', 999)
         qk_state = x
         inj_config = extra_options.get('INJ_CONFIG', None)
         if inj_config is not None and self.block_idx in inj_config.attn_map:

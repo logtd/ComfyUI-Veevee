@@ -49,7 +49,7 @@ class ResBlock(ComfyResBlock):
             sub_idx = sub_idxs[0]
 
         res_inj_steps = extra_options.get('RES_INJECTION_STEPS', 0)
-        step = extra_options['STEP']
+        step = extra_options.get('STEP', 999)
         inj_config = extra_options.get('INJ_CONFIG', None)
         if inj_config and self.block_idx in inj_config.res_map:
             if extra_options['INJECTION_KEY'] == 'SAMPLING' and step < res_inj_steps and step < inj_config.res_save_steps:

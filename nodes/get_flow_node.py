@@ -5,21 +5,20 @@ from einops import rearrange
 from folder_paths import models_dir
 
 from ..utils.flow_viz import flow_to_color
-from ..utils.flow_utils import get_full_frames_trajectories
-from ..gmflow.gmflow.geometry import flow_warp, forward_backward_consistency_check
-from ..gmflow.gmflow.gmflow import GMFlow
+from ..utils.flow_utils import get_full_frames_trajectories, flow_warp, forward_backward_consistency_check
+from ..unimatch.unimatch.unimatch import UniMatch
 
 
-GMFLOW_PATH = os.path.join(models_dir, 'gmflow')
-os.makedirs(GMFLOW_PATH, exist_ok=True)
+UNIMATCH_PATH = os.path.join(models_dir, 'unimatch')
+os.makedirs(UNIMATCH_PATH, exist_ok=True)
 
 
-def get_gmflow_path():
-    return GMFLOW_PATH
+def get_unimatch_path():
+    return UNIMATCH_PATH
 
 
-def get_gmflow_files():
-    return os.listdir(get_gmflow_path())
+def get_unimatch_files():
+    return os.listdir(get_unimatch_path())
 
 
 def get_backward_occlusions(images, forward_flows, backward_flows):
@@ -39,8 +38,10 @@ def pred_flows(flow_model, images):
     forward_flows, backward_flows = [], []
 
     for i in range(len(images)):
-        results_dict = flow_model(images[i:i+1], images_r[i:i+1], attn_splits_list=[2], 
-                            corr_radius_list=[-1], prop_radius_list=[-1], pred_bidir_flow=True)
+        results_dict = flow_model(images[i:i+1], images_r[i:i+1], attn_splits_list=[2, 8], 
+                                corr_radius_list=[-1, 4], prop_radius_list=[-1, 1], pred_bidir_flow=True,
+                                num_reg_refine=6,
+                                attn_type='swin')
         flow_pr = results_dict['flow_preds'][-1]
         forward_flows_part, backward_flows_part = flow_pr.chunk(2)
         forward_flows.append(forward_flows_part.to('cpu'))
@@ -78,7 +79,7 @@ class FlowGetFlowNode:
         return {
             "required": {
                 "images": ("IMAGE",),
-                "checkpoint": (get_gmflow_files(),),
+                "checkpoint": (get_unimatch_files(),),
                 "flow_type": (['SD15', 'SD15_Full', 'SDXL'],),
                 "direction": (['forward', 'backward', 'both'],)
             },
@@ -91,15 +92,17 @@ class FlowGetFlowNode:
 
     # 
     def process(self, images, checkpoint, flow_type, direction):
-        flow_model = GMFlow(feature_channels=128,
-                num_scales=1,
-                upsample_factor=8,
-                num_head=1,
-                attention_type='swin',
-                ffn_dim_expansion=4,
-                num_transformer_layers=6,
-        ).to('cuda')
-        flow_model.load_state_dict(torch.load(os.path.join(get_gmflow_path(), checkpoint))['model'])
+        state_dict = torch.load(os.path.join(get_unimatch_path(), checkpoint))['model']
+        flow_model = UniMatch(feature_channels=128, # args.feature_channels,
+                    num_scales=2, #args.num_scales,
+                    upsample_factor=4, # args.upsample_factor,
+                    num_head=1, # args.num_head,
+                    ffn_dim_expansion=4, #args.ffn_dim_expansion,
+                    num_transformer_layers=6, #args.num_transformer_layers,
+                    reg_refine=True,#  args.reg_refine,
+                    task='flow').to('cuda')
+        
+        flow_model.load_state_dict(state_dict)
         pred = pred_flows(flow_model, images)
         del flow_model
         
