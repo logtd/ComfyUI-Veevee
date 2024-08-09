@@ -1,13 +1,18 @@
 # ComfyUI-Veevee (Work in progress)
 
-A Video2Video framework for ComfyUI. Supports SD1.5 and SDXL.
+A Video2Video framework for text2image models in ComfyUI. Supports SD1.5 and SDXL.
 
 ## Examples
-(TODO)
-See `example_workflows` directory.
+(TODO more examples)
+See `example_workflows` directory for SD15 and SDXL examples with notes.
 
 ## Installation 
 Install this repo from the ComfyUI manager or git clone the repo into `custom_nodes` then `pip install -r requirements.txt` within the cloned repo.
+
+### Required Models
+It is recommended to use Flow Attention through Unimatch (and others soon). 
+To get Unimatch optical flow go to `https://github.com/autonomousvision/unimatch/blob/master/MODEL_ZOO.md#optical-flow` and select one of the models. **It must be one of the regrefine larger models**.
+Sintel and things versions tend to give the best results.
   
 ## Nodes
 
@@ -55,7 +60,7 @@ This node calculates trajectories to guide Flow Attention.
 
 #### Inputs
 * images: Your input video frames.
-* checkpoint: The gmflow checkpoint that must be in `ComfyUI/models/gmflow`
+* checkpoint: The unimatch checkpoint that must be in `ComfyUI/models/unimatch`
 * flow_type: There are three flow types available. These must match your model.
   * SD15 is the standard flow for SD15
   * SD15_Full utilizes a stronger flow for SD15
@@ -111,6 +116,6 @@ FLATTEN
 FRESCO
 Rave
 Video2Video-zero
-GMFlow
+Unimatch
 FlowDiffuser
 CoTracker
