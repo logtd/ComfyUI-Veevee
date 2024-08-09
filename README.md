@@ -17,7 +17,7 @@ Install this repo from the ComfyUI manager or git clone the repo into `custom_no
 
 ### Required Models
 It is recommended to use Flow Attention through Unimatch (and others soon). 
-To get Unimatch optical flow go to `https://github.com/autonomousvision/unimatch/blob/master/MODEL_ZOO.md#optical-flow` and select one of the models. **It must be one of the regrefine larger models**.
+To get Unimatch optical flow go to https://github.com/autonomousvision/unimatch/blob/master/MODEL_ZOO.md#optical-flow and select one of the models. **It must be one of the regrefine larger models**.
 Sintel and things versions tend to give the best results.
   
 ## Nodes
