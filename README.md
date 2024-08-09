@@ -6,6 +6,12 @@ A Video2Video framework for text2image models in ComfyUI. Supports SD1.5 and SDX
 (TODO more examples)
 See `example_workflows` directory for SD15 and SDXL examples with notes.
 
+https://github.com/user-attachments/assets/c6d0894f-34b4-4ea3-aaff-27779357fdd2
+
+
+https://github.com/user-attachments/assets/eb313b01-ba3a-4b75-af2d-72d40e9e357b
+
+
 ## Installation 
 Install this repo from the ComfyUI manager or git clone the repo into `custom_nodes` then `pip install -r requirements.txt` within the cloned repo.
 
@@ -114,7 +120,8 @@ This node allows some more control over running AnimateDiff alongside Veevee.
 (TODO)
 FLATTEN
 FRESCO
-Rave
+TokenFlow
+RAVE
 Video2Video-zero
 Unimatch
 FlowDiffuser
