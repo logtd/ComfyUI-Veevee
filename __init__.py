@@ -8,6 +8,7 @@ from .nodes.rave_config_node import RaveConfigNode
 from .nodes.sca_config_node import SCAConfigNode
 from .nodes.flow_config_node import FlowConfigNode
 from .nodes.temporal_config_node import TemporalConfigNode
+from .nodes.get_raft_flow_node import GetRaftFlowNode
 
 
 NODE_CLASS_MAPPINGS = {
@@ -21,6 +22,7 @@ NODE_CLASS_MAPPINGS = {
     "RaveConfig": RaveConfigNode,
     "SCAConfig": SCAConfigNode,
     "TemporalConfig": TemporalConfigNode,
+    "GetRaftFlow": GetRaftFlowNode,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -34,4 +36,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "RaveConfig": "VV] Rave Attn Config",
     "SCAConfig": "VV] Sparse Casual Attn Config",
     "TemporalConfig": "VV] Temporal Attn Config",
+    "VVGetRaftFlow": "VV] Get Raft Flow"
 }
